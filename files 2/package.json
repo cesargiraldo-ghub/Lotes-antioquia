@@ -1,0 +1,9 @@
+{
+  "name": "lotes-antioquia",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Inventario de lotes de Lotes Antioquia, alimentado por CRM RED",
+  "engines": {
+    "node": "20.x"
+  }
+}

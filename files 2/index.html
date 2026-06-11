@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lotes Antioquia — Inventario de lotes y terrenos</title>
+<meta name="description" content="Encuentra lotes y terrenos en Antioquia. Inventario en tiempo real desde nuestro CRM.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --bosque:#163A2B;       /* verde profundo, color de marca dominante */
+  --musgo:#2F5641;        /* verde secundario */
+  --salvia:#6E8C72;       /* verde apagado para texto secundario */
+  --hueso:#F3F0E7;        /* fondo papel cálido */
+  --niebla:#E4E1D5;       /* bordes / superficies suaves */
+  --sol:#D9A227;          /* acento dorado (sol/tierra), usado con moderación */
+  --tierra:#B5641E;       /* clay para hover del acento */
+  --carbon:#1A1C18;       /* texto principal */
+  --blanco:#FCFBF6;       /* tarjetas */
+  --sombra:0 1px 2px rgba(22,58,43,.06), 0 8px 24px -12px rgba(22,58,43,.18);
+  --sombra-alta:0 12px 40px -12px rgba(22,58,43,.35);
+  --radio:14px;
+  --radio-sm:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--hueso);
+  color:var(--carbon);
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+img{display:block;max-width:100%}
+button{font-family:inherit;cursor:pointer}
+::selection{background:var(--sol);color:var(--bosque)}
+
+/* ============ HEADER ============ */
+.encabezado{
+  position:sticky;top:0;z-index:50;
+  background:var(--bosque);color:var(--hueso);
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.encabezado-inner{
+  max-width:1240px;margin:0 auto;padding:14px 24px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+}
+.logo{display:flex;align-items:center;gap:11px;text-decoration:none;color:inherit}
+.logo-glifo{width:30px;height:30px;flex:none}
+.logo-glifo circle{fill:none;stroke:var(--sol);stroke-width:1.4}
+.logo-texto{font-family:'Bricolage Grotesque';font-weight:700;font-size:1.25rem;letter-spacing:-.02em;line-height:1}
+.logo-texto span{color:var(--sol)}
+.encabezado-meta{font-size:.82rem;color:rgba(243,240,231,.7);font-variant-numeric:tabular-nums}
+.encabezado-meta b{color:var(--hueso);font-weight:600}
+
+/* ============ HERO ============ */
+.hero{position:relative;overflow:hidden;background:var(--hueso);border-bottom:1px solid var(--niebla)}
+.hero-contornos{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.hero-contornos path{fill:none;stroke:var(--musgo);stroke-width:1;opacity:.13}
+.hero-inner{max-width:1240px;margin:0 auto;padding:64px 24px 30px;position:relative}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--musgo);margin-bottom:18px;
+}
+.hero-eyebrow::before{content:"";width:26px;height:1.5px;background:var(--sol)}
+.hero h1{
+  font-family:'Bricolage Grotesque';font-weight:800;letter-spacing:-.03em;
+  font-size:clamp(2.4rem,6vw,4.3rem);line-height:.98;color:var(--bosque);max-width:14ch;
+}
+.hero h1 em{font-style:normal;color:var(--sol)}
+.hero-sub{margin-top:18px;font-size:clamp(1rem,1.6vw,1.18rem);color:var(--musgo);max-width:46ch}
+
+/* ============ BUSCADOR ============ */
+.barra{
+  max-width:1240px;margin:-26px auto 0;padding:0 24px;position:relative;z-index:10;
+}
+.barra-caja{
+  background:var(--blanco);border:1px solid var(--niebla);border-radius:var(--radio);
+  box-shadow:var(--sombra);padding:14px;
+}
+.busqueda{position:relative;margin-bottom:12px}
+.busqueda svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--salvia)}
+.busqueda input{
+  width:100%;border:1px solid var(--niebla);border-radius:var(--radio-sm);
+  padding:13px 14px 13px 42px;font-size:1rem;background:var(--hueso);color:var(--carbon);
+  transition:border-color .15s, box-shadow .15s;
+}
+.busqueda input:focus{outline:none;border-color:var(--musgo);box-shadow:0 0 0 3px rgba(47,86,65,.13);background:var(--blanco)}
+.filtros{display:flex;flex-wrap:wrap;gap:10px;align-items:end}
+.campo{display:flex;flex-direction:column;gap:5px;flex:1 1 150px;min-width:140px}
+.campo label{font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--salvia)}
+.campo select,.campo input{
+  border:1px solid var(--niebla);border-radius:var(--radio-sm);padding:10px 12px;
+  font-size:.92rem;background:var(--blanco);color:var(--carbon);width:100%;
+  appearance:none;-webkit-appearance:none;
+}
+.campo select{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236E8C72' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;
+}
+.campo select:focus,.campo input:focus{outline:none;border-color:var(--musgo);box-shadow:0 0 0 3px rgba(47,86,65,.13)}
+.btn-limpiar{
+  border:1px solid var(--niebla);background:var(--hueso);color:var(--musgo);
+  border-radius:var(--radio-sm);padding:10px 16px;font-size:.88rem;font-weight:600;
+  white-space:nowrap;transition:background .15s,color .15s;
+}
+.btn-limpiar:hover{background:var(--niebla)}
+
+/* ============ RESULTADOS ============ */
+.resultados{max-width:1240px;margin:0 auto;padding:34px 24px 64px}
+.resultados-cab{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+.conteo{font-family:'Bricolage Grotesque';font-weight:700;font-size:1.5rem;color:var(--bosque);letter-spacing:-.02em}
+.conteo span{color:var(--salvia);font-weight:500;font-size:.95rem;font-family:'Inter'}
+.aviso-demo{
+  display:none;align-items:center;gap:10px;width:100%;margin-bottom:22px;
+  background:rgba(217,162,39,.12);border:1px solid rgba(217,162,39,.4);color:var(--tierra);
+  padding:11px 15px;border-radius:var(--radio-sm);font-size:.88rem;
+}
+.aviso-demo.visible{display:flex}
+
+.grilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:22px}
+
+.tarjeta{
+  background:var(--blanco);border:1px solid var(--niebla);border-radius:var(--radio);
+  overflow:hidden;cursor:pointer;display:flex;flex-direction:column;
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.tarjeta:hover{transform:translateY(-4px);box-shadow:var(--sombra-alta);border-color:var(--salvia)}
+.tarjeta:focus-visible{outline:3px solid var(--sol);outline-offset:2px}
+.tarjeta-foto{position:relative;aspect-ratio:4/3;background:var(--niebla);overflow:hidden}
+.tarjeta-foto img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease}
+.tarjeta:hover .tarjeta-foto img{transform:scale(1.05)}
+.insignia{
+  position:absolute;top:12px;left:12px;font-size:.72rem;font-weight:700;letter-spacing:.03em;
+  padding:5px 11px;border-radius:100px;text-transform:uppercase;
+}
+.insignia.venta{background:var(--sol);color:var(--bosque)}
+.insignia.arriendo{background:var(--musgo);color:var(--hueso)}
+.insignia.otro{background:var(--carbon);color:var(--hueso)}
+.tarjeta-cuerpo{padding:16px 17px 18px;display:flex;flex-direction:column;gap:8px;flex:1}
+.tarjeta-precio{font-family:'Bricolage Grotesque';font-weight:700;font-size:1.42rem;color:var(--bosque);letter-spacing:-.02em;line-height:1}
+.tarjeta-precio small{font-size:.78rem;color:var(--salvia);font-weight:500;font-family:'Inter';letter-spacing:0}
+.tarjeta-titulo{font-weight:600;font-size:.98rem;color:var(--carbon);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tarjeta-ubic{display:flex;align-items:center;gap:6px;color:var(--salvia);font-size:.86rem}
+.tarjeta-ubic svg{flex:none;color:var(--salvia)}
+.tarjeta-ubic span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tarjeta-meta{display:flex;gap:14px;margin-top:auto;padding-top:10px;border-top:1px solid var(--niebla);color:var(--musgo);font-size:.82rem;font-weight:500}
+.tarjeta-meta span{display:inline-flex;align-items:center;gap:5px;font-variant-numeric:tabular-nums}
+.tarjeta-meta svg{color:var(--salvia)}
+
+/* estados */
+.estado{text-align:center;padding:70px 20px;color:var(--salvia)}
+.estado-grande{font-family:'Bricolage Grotesque';font-weight:700;font-size:1.35rem;color:var(--musgo);margin-bottom:8px}
+.cargador{display:inline-block;width:34px;height:34px;border:3px solid var(--niebla);border-top-color:var(--musgo);border-radius:50%;animation:girar .8s linear infinite;margin-bottom:18px}
+@keyframes girar{to{transform:rotate(360deg)}}
+.btn-reintentar{margin-top:16px;background:var(--bosque);color:var(--hueso);border:none;border-radius:var(--radio-sm);padding:11px 22px;font-weight:600}
+
+.mas{display:flex;justify-content:center;margin-top:38px}
+.btn-mas{
+  background:var(--bosque);color:var(--hueso);border:none;border-radius:100px;
+  padding:14px 34px;font-weight:600;font-size:.95rem;transition:background .15s;
+}
+.btn-mas:hover{background:var(--musgo)}
+
+/* esqueletos */
+.esqueleto{background:var(--blanco);border:1px solid var(--niebla);border-radius:var(--radio);overflow:hidden}
+.esqueleto .ph{background:linear-gradient(90deg,var(--niebla) 25%,#eeece2 37%,var(--niebla) 63%);background-size:400% 100%;animation:brillo 1.4s ease infinite}
+.esqueleto .ph.foto{aspect-ratio:4/3}
+.esqueleto .ph.linea{height:13px;border-radius:6px;margin:14px 16px 0}
+.esqueleto .ph.linea.corta{width:50%}
+@keyframes brillo{0%{background-position:100% 0}100%{background-position:-100% 0}}
+
+/* ============ MODAL ============ */
+.modal-fondo{
+  position:fixed;inset:0;z-index:100;background:rgba(22,28,24,.6);backdrop-filter:blur(3px);
+  display:none;align-items:flex-start;justify-content:center;padding:30px 18px;overflow-y:auto;
+}
+.modal-fondo.abierto{display:flex}
+.modal{
+  background:var(--hueso);border-radius:var(--radio);max-width:920px;width:100%;
+  box-shadow:var(--sombra-alta);overflow:hidden;animation:subir .3s ease;
+}
+@keyframes subir{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.modal-cerrar{
+  position:absolute;top:16px;right:16px;z-index:5;width:38px;height:38px;border-radius:50%;
+  background:rgba(255,255,255,.92);border:none;display:grid;place-items:center;color:var(--carbon);box-shadow:var(--sombra);
+}
+.modal-cerrar:hover{background:#fff}
+.galeria{position:relative;background:var(--carbon)}
+.galeria-principal{aspect-ratio:16/10;background:var(--musgo)}
+.galeria-principal img{width:100%;height:100%;object-fit:cover}
+.galeria-tiras{display:flex;gap:8px;padding:10px;background:var(--bosque);overflow-x:auto}
+.galeria-tiras img{width:74px;height:54px;object-fit:cover;border-radius:7px;cursor:pointer;opacity:.55;flex:none;border:2px solid transparent;transition:opacity .15s}
+.galeria-tiras img.activa{opacity:1;border-color:var(--sol)}
+.modal-cuerpo{padding:26px 28px 30px}
+.modal-insignias{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.modal-precio{font-family:'Bricolage Grotesque';font-weight:800;font-size:2.1rem;color:var(--bosque);letter-spacing:-.03em;line-height:1}
+.modal-precio small{font-size:.9rem;color:var(--salvia);font-weight:500;font-family:'Inter';letter-spacing:0}
+.modal-titulo{font-family:'Bricolage Grotesque';font-weight:700;font-size:1.4rem;margin-top:6px;color:var(--carbon);letter-spacing:-.02em}
+.modal-ubic{display:flex;align-items:center;gap:7px;color:var(--musgo);margin-top:8px;font-size:.95rem}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:1px;background:var(--niebla);border:1px solid var(--niebla);border-radius:var(--radio-sm);overflow:hidden;margin:22px 0}
+.stat{background:var(--blanco);padding:14px 16px}
+.stat-valor{font-family:'Bricolage Grotesque';font-weight:700;font-size:1.25rem;color:var(--bosque);font-variant-numeric:tabular-nums}
+.stat-etq{font-size:.74rem;color:var(--salvia);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.modal-seccion-t{font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--musgo);margin:24px 0 10px}
+.modal-desc{color:#3a3d36;font-size:.96rem;white-space:pre-line}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--blanco);border:1px solid var(--niebla);border-radius:100px;padding:6px 13px;font-size:.84rem;color:var(--musgo)}
+.agente{display:flex;align-items:center;gap:12px;margin-top:22px;padding:14px;background:var(--blanco);border:1px solid var(--niebla);border-radius:var(--radio-sm)}
+.agente img{width:46px;height:46px;border-radius:50%;object-fit:cover;background:var(--niebla)}
+.agente-nom{font-weight:600;color:var(--carbon)}
+.agente-rol{font-size:.82rem;color:var(--salvia)}
+.acciones{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.btn-acc{display:inline-flex;align-items:center;gap:9px;border-radius:var(--radio-sm);padding:13px 22px;font-weight:600;font-size:.95rem;text-decoration:none;border:none}
+.btn-wa{background:#25D366;color:#0b3d1e;flex:1 1 auto;justify-content:center}
+.btn-wa:hover{background:#1fb858}
+.btn-sec{background:transparent;border:1px solid var(--musgo);color:var(--musgo)}
+.btn-sec:hover{background:var(--musgo);color:var(--hueso)}
+
+/* ============ FOOTER ============ */
+.pie{background:var(--bosque);color:rgba(243,240,231,.72);font-size:.85rem;border-top:1px solid rgba(255,255,255,.07)}
+.pie-inner{max-width:1240px;margin:0 auto;padding:30px 24px;display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center}
+.pie a{color:var(--sol);text-decoration:none}
+
+@media (max-width:600px){
+  .hero-inner{padding:46px 20px 24px}
+  .resultados{padding:26px 18px 50px}
+  .modal-cuerpo{padding:20px}
+  .acciones{flex-direction:column}
+  .btn-acc{justify-content:center}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+
+<header class="encabezado">
+  <div class="encabezado-inner">
+    <a href="#" class="logo" aria-label="Lotes Antioquia inicio">
+      <svg class="logo-glifo" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="6"/><circle cx="20" cy="20" r="11.5"/><circle cx="20" cy="20" r="17"/>
+      </svg>
+      <span class="logo-texto">Lotes<span> Antioquia</span></span>
+    </a>
+    <div class="encabezado-meta" id="metaHeader">Cargando inventario…</div>
+  </div>
+</header>
+
+<section class="hero">
+  <svg class="hero-contornos" viewBox="0 0 1240 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <path d="M-40,300 C200,250 420,340 640,290 C880,236 1040,320 1300,270"/>
+    <path d="M-40,250 C220,200 430,290 660,238 C900,184 1060,266 1300,214"/>
+    <path d="M-40,200 C240,156 450,236 680,188 C920,138 1080,210 1300,160"/>
+    <path d="M-40,150 C260,112 470,184 700,140 C940,96 1100,158 1300,110"/>
+    <path d="M-40,100 C280,70 490,132 720,94 C960,58 1120,108 1300,64"/>
+    <path d="M-40,52 C300,30 510,82 740,50 C980,22 1140,60 1300,22"/>
+  </svg>
+  <div class="hero-inner">
+    <span class="hero-eyebrow">Inventario en tiempo real</span>
+    <h1>El <em>lote</em> que estás buscando, en Antioquia.</h1>
+    <p class="hero-sub">Terrenos, lotes y proyectos disponibles, conectados directamente a nuestro CRM. Busca por municipio, precio o área y contáctanos por WhatsApp.</p>
+  </div>
+</section>
+
+<div class="barra">
+  <div class="barra-caja">
+    <div class="busqueda">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="search" id="q" placeholder="Buscar por municipio, zona, título o referencia…" autocomplete="off">
+    </div>
+    <div class="filtros">
+      <div class="campo">
+        <label for="fNegocio">Negocio</label>
+        <select id="fNegocio"><option value="">Todos</option></select>
+      </div>
+      <div class="campo">
+        <label for="fMunicipio">Municipio</label>
+        <select id="fMunicipio"><option value="">Todos</option></select>
+      </div>
+      <div class="campo">
+        <label for="fTipo">Tipo</label>
+        <select id="fTipo"><option value="">Todos</option></select>
+      </div>
+      <div class="campo">
+        <label for="fPrecio">Precio máx.</label>
+        <select id="fPrecio">
+          <option value="">Sin límite</option>
+          <option value="50000000">$50 M</option>
+          <option value="100000000">$100 M</option>
+          <option value="200000000">$200 M</option>
+          <option value="500000000">$500 M</option>
+          <option value="1000000000">$1.000 M</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label for="fOrden">Ordenar</label>
+        <select id="fOrden">
+          <option value="reciente">Más recientes</option>
+          <option value="precio-asc">Precio: menor</option>
+          <option value="precio-desc">Precio: mayor</option>
+          <option value="area-desc">Área: mayor</option>
+        </select>
+      </div>
+      <button class="btn-limpiar" id="btnLimpiar" type="button">Limpiar</button>
+    </div>
+  </div>
+</div>
+
+<main class="resultados">
+  <div class="aviso-demo" id="avisoDemo">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+    <span><b>Vista de demostración.</b> No se pudo conectar al CRM, estás viendo lotes de ejemplo. Despliega en Vercel con tus credenciales para ver el inventario real.</span>
+  </div>
+  <div class="resultados-cab">
+    <div class="conteo" id="conteo">&nbsp;</div>
+  </div>
+  <div id="contenido"></div>
+  <div class="mas" id="zonaMas"></div>
+</main>
+
+<footer class="pie">
+  <div class="pie-inner">
+    <span>© <span id="anio"></span> Lotes Antioquia · Inventario desde CRM RED</span>
+    <span>Hecho con datos en vivo · <a href="#" id="lnkRefrescar">Refrescar inventario</a></span>
+  </div>
+</footer>
+
+<div class="modal-fondo" id="modalFondo" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+  <div class="modal" id="modal" style="position:relative">
+    <button class="modal-cerrar" id="modalCerrar" aria-label="Cerrar">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <div id="modalContenido"></div>
+  </div>
+</div>
+
+<script>
+/* ===================================================================
+   CONFIGURACIÓN  —  edita estos valores
+   =================================================================== */
+const CONFIG = {
+  api: '/api/inmuebles',              // tu función serverless en Vercel
+  // Número de WhatsApp por defecto (formato internacional, sin + ni espacios).
+  // Cámbialo por el número comercial de Lotes Antioquia:
+  whatsapp: '573000000000',
+  marca: 'Lotes Antioquia',
+  pageSize: 12
+};
+
+/* ===================================================================
+   ESTADO
+   =================================================================== */
+const estado = { todos: [], filtrados: [], visible: CONFIG.pageSize, demo: false };
+const $ = (s) => document.querySelector(s);
+
+const pesos = new Intl.NumberFormat('es-CO',{style:'currency',currency:'COP',maximumFractionDigits:0});
+const numero = new Intl.NumberFormat('es-CO');
+const fmtPrecio = (n)=> (n && n>0) ? pesos.format(n) : null;
+
+/* placeholder SVG cuando un lote no tiene foto */
+function placeholder(txt){
+  const t = (txt||'Lote').slice(0,22);
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'>
+    <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+      <stop offset='0' stop-color='%232F5641'/><stop offset='1' stop-color='%23163A2B'/></linearGradient></defs>
+    <rect width='400' height='300' fill='url(%23g)'/>
+    <g fill='none' stroke='%23D9A227' stroke-opacity='0.35' stroke-width='1.2'>
+      <path d='M-10 230 C90 200 160 250 250 220 C320 196 360 230 410 210'/>
+      <path d='M-10 190 C90 160 160 210 250 180 C320 156 360 190 410 170'/>
+      <path d='M-10 150 C90 120 160 170 250 140 C320 116 360 150 410 130'/></g>
+    <text x='200' y='150' font-family='sans-serif' font-size='17' fill='%23F3F0E7' text-anchor='middle' font-weight='600'>${t}</text>
+    <text x='200' y='172' font-family='sans-serif' font-size='11' fill='%236E8C72' text-anchor='middle'>Sin imagen</text>
+  </svg>`;
+  return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg.replace(/\n\s*/g,' '));
+}
+
+const claseNegocio = (n)=>{ const v=(n||'').toLowerCase(); if(v.includes('venta'))return'venta'; if(v.includes('arr'))return'arriendo'; return'otro'; };
+const txtArea = (m2)=> (m2 && m2>0) ? `${numero.format(m2)} m²` : null;
+
+/* ===================================================================
+   CARGA DE DATOS
+   =================================================================== */
+async function cargar(refrescar){
+  pintarEsqueletos();
+  $('#metaHeader').textContent = 'Cargando inventario…';
+  try{
+    const r = await fetch(CONFIG.api + (refrescar?'?refresh=1':''), {headers:{'Accept':'application/json'}});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const json = await r.json();
+    if(!json.success || !Array.isArray(json.data)) throw new Error('Respuesta inválida');
+    estado.demo = false;
+    $('#avisoDemo').classList.remove('visible');
+    iniciar(json.data);
+  }catch(e){
+    // Fallback: datos de demostración para previsualizar el diseño
+    estado.demo = true;
+    $('#avisoDemo').classList.add('visible');
+    iniciar(DEMO);
+  }
+}
+
+function iniciar(data){
+  estado.todos = data;
+  poblarFiltros(data);
+  $('#metaHeader').innerHTML = `<b>${data.length}</b> lote${data.length===1?'':'s'} disponible${data.length===1?'':'s'}`;
+  aplicar();
+}
+
+function poblarFiltros(data){
+  const unicos = (key)=>[...new Set(data.map(p=>p[key]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'es'));
+  llenarSelect('#fNegocio', unicos('tipoNegocio'));
+  llenarSelect('#fMunicipio', unicos('municipio'));
+  llenarSelect('#fTipo', unicos('tipoInmueble'));
+}
+function llenarSelect(sel, valores){
+  const el=$(sel); const actual=el.value;
+  el.querySelectorAll('option:not([value=""])').forEach(o=>o.remove());
+  valores.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; el.appendChild(o); });
+  el.value=actual;
+}
+
+/* ===================================================================
+   FILTROS + ORDEN
+   =================================================================== */
+function aplicar(){
+  const q = $('#q').value.trim().toLowerCase();
+  const neg = $('#fNegocio').value, mun = $('#fMunicipio').value, tip = $('#fTipo').value;
+  const pmax = Number($('#fPrecio').value)||0;
+  const orden = $('#fOrden').value;
+
+  let r = estado.todos.filter(p=>{
+    if(neg && p.tipoNegocio!==neg) return false;
+    if(mun && p.municipio!==mun) return false;
+    if(tip && p.tipoInmueble!==tip) return false;
+    const precio = p.precioVenta || p.precioArriendo || 0;
+    if(pmax && precio && precio>pmax) return false;
+    if(q){
+      const blob = [p.titulo,p.municipio,p.departamento,p.zona,p.barrio,p.direccion,p.tipoInmueble,p.id]
+        .filter(Boolean).join(' ').toLowerCase();
+      if(!blob.includes(q)) return false;
+    }
+    return true;
+  });
+
+  const pr = (p)=> p.precioVenta || p.precioArriendo || 0;
+  if(orden==='precio-asc') r.sort((a,b)=>(pr(a)||Infinity)-(pr(b)||Infinity));
+  else if(orden==='precio-desc') r.sort((a,b)=>pr(b)-pr(a));
+  else if(orden==='area-desc') r.sort((a,b)=>(b.areaLote||0)-(a.areaLote||0));
+  else r.sort((a,b)=> (new Date(b.creado||0)) - (new Date(a.creado||0)) || (b.id-a.id));
+
+  estado.filtrados = r;
+  estado.visible = CONFIG.pageSize;
+  pintar();
+}
+
+/* ===================================================================
+   RENDER
+   =================================================================== */
+function pintarEsqueletos(){
+  $('#conteo').innerHTML='&nbsp;';
+  let h='<div class="grilla">';
+  for(let i=0;i<8;i++) h+=`<div class="esqueleto"><div class="ph foto"></div><div class="ph linea"></div><div class="ph linea corta"></div><div class="ph linea" style="margin-bottom:16px"></div></div>`;
+  h+='</div>';
+  $('#contenido').innerHTML=h;
+  $('#zonaMas').innerHTML='';
+}
+
+function pintar(){
+  const lista = estado.filtrados;
+  $('#conteo').innerHTML = lista.length
+    ? `${lista.length} <span>lote${lista.length===1?'':'s'} encontrado${lista.length===1?'':'s'}</span>`
+    : '';
+
+  if(!lista.length){
+    $('#contenido').innerHTML = `<div class="estado"><div class="estado-grande">Sin resultados</div><p>No hay lotes que coincidan con tu búsqueda. Prueba a quitar algún filtro.</p></div>`;
+    $('#zonaMas').innerHTML=''; return;
+  }
+
+  const trozo = lista.slice(0, estado.visible);
+  $('#contenido').innerHTML = '<div class="grilla">'+trozo.map(tarjeta).join('')+'</div>';
+
+  document.querySelectorAll('.tarjeta').forEach(c=>{
+    c.addEventListener('click', ()=>abrirModal(c.dataset.id));
+    c.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();abrirModal(c.dataset.id);} });
+  });
+
+  $('#zonaMas').innerHTML = (estado.visible < lista.length)
+    ? `<button class="btn-mas" id="btnMas">Ver más lotes (${lista.length-estado.visible})</button>` : '';
+  const bm=$('#btnMas'); if(bm) bm.addEventListener('click', ()=>{ estado.visible+=CONFIG.pageSize; pintar(); });
+}
+
+function tarjeta(p){
+  const precio = fmtPrecio(p.precioVenta) || fmtPrecio(p.precioArriendo);
+  const sufijo = (!p.precioVenta && p.precioArriendo) ? ' <small>/mes</small>' : '';
+  const foto = (p.imagenes && p.imagenes[0]) ? p.imagenes[0] : placeholder(p.tipoInmueble||'Lote');
+  const ubic = [p.municipio,p.departamento].filter(Boolean).join(', ') || p.zona || '—';
+  const area = txtArea(p.areaLote) || txtArea(p.areaConstruida);
+  const metas = [];
+  if(area) metas.push(`<span title="Área">${icono('area')}${area}</span>`);
+  if(p.habitaciones) metas.push(`<span title="Habitaciones">${icono('cama')}${p.habitaciones}</span>`);
+  if(p.banos) metas.push(`<span title="Baños">${icono('bano')}${p.banos}</span>`);
+  if(!metas.length && p.estrato) metas.push(`<span>Estrato ${p.estrato}</span>`);
+
+  return `<article class="tarjeta" tabindex="0" data-id="${p.id}" aria-label="${esc(p.titulo)}">
+    <div class="tarjeta-foto">
+      ${p.tipoNegocio?`<span class="insignia ${claseNegocio(p.tipoNegocio)}">${esc(p.tipoNegocio)}</span>`:''}
+      <img src="${foto}" alt="${esc(p.titulo)}" loading="lazy" onerror="this.src='${placeholder(p.tipoInmueble||'Lote')}'">
+    </div>
+    <div class="tarjeta-cuerpo">
+      <div class="tarjeta-precio">${precio||'Consultar'}${sufijo}</div>
+      <div class="tarjeta-titulo">${esc(p.titulo)}</div>
+      <div class="tarjeta-ubic">${icono('pin')}<span>${esc(ubic)}</span></div>
+      <div class="tarjeta-meta">${metas.join('')}</div>
+    </div>
+  </article>`;
+}
+
+/* ===================================================================
+   MODAL DE DETALLE
+   =================================================================== */
+function abrirModal(id){
+  const p = estado.todos.find(x=>String(x.id)===String(id));
+  if(!p) return;
+  const precio = fmtPrecio(p.precioVenta) || fmtPrecio(p.precioArriendo);
+  const sufijo = (!p.precioVenta && p.precioArriendo) ? ' <small>/mes</small>' : '';
+  const imgs = (p.imagenes&&p.imagenes.length)?p.imagenes:[placeholder(p.tipoInmueble||'Lote')];
+  const ubic = [p.zona,p.barrio,p.municipio,p.departamento].filter(Boolean).join(', ')||'Antioquia';
+
+  const stats=[];
+  if(p.areaLote>0) stats.push(stat(numero.format(p.areaLote)+' m²','Área lote'));
+  if(p.areaConstruida>0) stats.push(stat(numero.format(p.areaConstruida)+' m²','Área construida'));
+  if(p.habitaciones) stats.push(stat(p.habitaciones,'Habitaciones'));
+  if(p.banos) stats.push(stat(p.banos,'Baños'));
+  if(p.garaje) stats.push(stat(p.garaje,'Garajes'));
+  if(p.estrato) stats.push(stat(p.estrato,'Estrato'));
+
+  const msg = encodeURIComponent(`Hola, estoy interesado en el lote "${p.titulo}" (Ref. ${p.id})${precio?` — ${precio}`:''}. ¿Me das más información?`);
+  const tel = (p.agente && p.agente.whatsapp) ? p.agente.whatsapp : CONFIG.whatsapp;
+  const wa = `https://wa.me/${tel}?text=${msg}`;
+  const mapa = (p.lat && p.lng) ? `https://www.google.com/maps?q=${p.lat},${p.lng}` : null;
+
+  const caras = (p.caracteristicas||[]).filter(Boolean);
+
+  $('#modalContenido').innerHTML = `
+    <div class="galeria">
+      <div class="galeria-principal"><img id="galImg" src="${imgs[0]}" alt="${esc(p.titulo)}" onerror="this.src='${placeholder(p.tipoInmueble||'Lote')}'"></div>
+      ${imgs.length>1?`<div class="galeria-tiras">${imgs.map((u,i)=>`<img src="${u}" class="${i===0?'activa':''}" data-i="${i}" alt="Foto ${i+1}" onerror="this.style.display='none'">`).join('')}</div>`:''}
+    </div>
+    <div class="modal-cuerpo">
+      <div class="modal-insignias">
+        ${p.tipoNegocio?`<span class="insignia ${claseNegocio(p.tipoNegocio)}">${esc(p.tipoNegocio)}</span>`:''}
+        ${p.tipoInmueble?`<span class="chip">${esc(p.tipoInmueble)}</span>`:''}
+        <span class="chip">Ref. ${p.id}</span>
+      </div>
+      <div class="modal-precio">${precio||'Precio a consultar'}${sufijo}</div>
+      <h2 class="modal-titulo" id="modalTitulo">${esc(p.titulo)}</h2>
+      <div class="modal-ubic">${icono('pin')}${esc(ubic)}${p.direccion?` · ${esc(p.direccion)}`:''}</div>
+
+      ${stats.length?`<div class="stats">${stats.join('')}</div>`:''}
+
+      ${p.descripcion?`<div class="modal-seccion-t">Descripción</div><div class="modal-desc">${esc(p.descripcion)}</div>`:''}
+
+      ${caras.length?`<div class="modal-seccion-t">Características</div><div class="chips">${caras.map(c=>`<span class="chip">${esc(c)}</span>`).join('')}</div>`:''}
+
+      ${p.agente?`<div class="agente">
+        <img src="${p.agente.foto||placeholder('Agente')}" alt="${esc(p.agente.nombre)}" onerror="this.src='${placeholder('Agente')}'">
+        <div><div class="agente-nom">${esc(p.agente.nombre)}</div><div class="agente-rol">Asesor · ${CONFIG.marca}</div></div>
+      </div>`:''}
+
+      <div class="acciones">
+        <a class="btn-acc btn-wa" href="${wa}" target="_blank" rel="noopener">${icono('wa')} Escribir por WhatsApp</a>
+        ${mapa?`<a class="btn-acc btn-sec" href="${mapa}" target="_blank" rel="noopener">${icono('pin')} Ver en mapa</a>`:''}
+        ${p.video?`<a class="btn-acc btn-sec" href="${esc(p.video)}" target="_blank" rel="noopener">${icono('play')} Ver video</a>`:''}
+      </div>
+    </div>`;
+
+  document.querySelectorAll('.galeria-tiras img').forEach(t=>{
+    t.addEventListener('click', ()=>{
+      $('#galImg').src = t.src;
+      document.querySelectorAll('.galeria-tiras img').forEach(x=>x.classList.remove('activa'));
+      t.classList.add('activa');
+    });
+  });
+
+  $('#modalFondo').classList.add('abierto');
+  document.body.style.overflow='hidden';
+  $('#modalCerrar').focus();
+}
+function cerrarModal(){ $('#modalFondo').classList.remove('abierto'); document.body.style.overflow=''; }
+function stat(v,e){ return `<div class="stat"><div class="stat-valor">${v}</div><div class="stat-etq">${e}</div></div>`; }
+
+/* ===================================================================
+   ICONOS + UTILIDADES
+   =================================================================== */
+function icono(n){
+  const m={
+    pin:`<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>`,
+    area:`<path d="M3 3h18v18H3z"/><path d="M3 9h18M9 3v18"/>`,
+    cama:`<path d="M2 9V5a1 1 0 0 1 1-1h18a1 1 0 0 1 1 1v4"/><path d="M2 11h20v7M2 18v2M22 18v2"/><path d="M6 9V7h5v2"/>`,
+    bano:`<path d="M4 12h16v3a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-3Z"/><path d="M6 12V5a2 2 0 0 1 4 0"/><path d="M9 5h2"/>`,
+    wa:`<path d="M3 21l1.7-5A9 9 0 1 1 9 19.4L3 21Z"/><path d="M8.5 9c.5 3 3 5.5 6 6l1.5-2-2.5-1-1 1c-1-.5-2-1.5-2.5-2.5l1-1-1-2.5L8.5 9Z" fill="currentColor" stroke="none"/>`,
+    play:`<circle cx="12" cy="12" r="9"/><path d="M10 9l5 3-5 3V9Z" fill="currentColor" stroke="none"/>`
+  };
+  return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${m[n]||''}</svg>`;
+}
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ===================================================================
+   EVENTOS
+   =================================================================== */
+let t; const deb=(fn)=>{clearTimeout(t);t=setTimeout(fn,200);};
+$('#q').addEventListener('input', ()=>deb(aplicar));
+['fNegocio','fMunicipio','fTipo','fPrecio','fOrden'].forEach(id=>$('#'+id).addEventListener('change', aplicar));
+$('#btnLimpiar').addEventListener('click', ()=>{
+  $('#q').value=''; ['fNegocio','fMunicipio','fTipo','fPrecio'].forEach(id=>$('#'+id).value='');
+  $('#fOrden').value='reciente'; aplicar();
+});
+$('#modalCerrar').addEventListener('click', cerrarModal);
+$('#modalFondo').addEventListener('click', e=>{ if(e.target===$('#modalFondo')) cerrarModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape' && $('#modalFondo').classList.contains('abierto')) cerrarModal(); });
+$('#lnkRefrescar').addEventListener('click', e=>{ e.preventDefault(); cargar(true); });
+$('#anio').textContent = new Date().getFullYear();
+
+/* ===================================================================
+   DATOS DEMO (solo si falla la conexión al CRM)
+   =================================================================== */
+const DEMO = [
+  {id:9001,titulo:'Lote campestre en Llanogrande',tipoInmueble:'Lote',tipoNegocio:'Venta',municipio:'Rionegro',departamento:'Antioquia',zona:'Llanogrande',direccion:'Vía Llanogrande km 3',precioVenta:480000000,areaLote:2100,estrato:'5',descripcion:'Lote plano con excelente vista a la montaña, listo para construir.\nServicios disponibles en la vía. Documentación al día.',lat:6.1486,lng:-75.4133,imagenes:[],caracteristicas:['Plano','Servicios en vía','Escritura libre'],creado:'2026-06-01',agente:{nombre:'Andrea Córdoba',foto:null}},
+  {id:9002,titulo:'Terreno con bosque nativo en El Retiro',tipoInmueble:'Terreno',tipoNegocio:'Venta',municipio:'El Retiro',departamento:'Antioquia',zona:'Los Salados',precioVenta:320000000,areaLote:5400,estrato:'4',descripcion:'Amplio terreno con nacimiento de agua y zona boscosa protegida.',lat:6.0561,lng:-75.5028,imagenes:[],caracteristicas:['Nacimiento de agua','Bosque nativo','Clima frío'],creado:'2026-05-20',agente:null},
+  {id:9003,titulo:'Lote urbano para vivienda en La Ceja',tipoInmueble:'Lote',tipoNegocio:'Venta',municipio:'La Ceja',departamento:'Antioquia',zona:'Centro',precioVenta:185000000,areaLote:320,estrato:'4',descripcion:'Lote esquinero en sector residencial consolidado, ideal para casa o dúplex.',lat:6.0297,lng:-75.4314,imagenes:[],caracteristicas:['Esquinero','Servicios completos','Sector residencial'],creado:'2026-05-12',agente:null},
+  {id:9004,titulo:'Finca-lote productivo en Marinilla',tipoInmueble:'Lote',tipoNegocio:'Venta',municipio:'Marinilla',departamento:'Antioquia',zona:'San José',precioVenta:260000000,areaLote:8000,areaConstruida:60,habitaciones:2,banos:1,estrato:'3',descripcion:'Lote con casa pequeña, apto para cultivo y recreo. Acceso vehicular todo el año.',lat:6.1739,lng:-75.3389,imagenes:[],caracteristicas:['Acceso vehicular','Tierra fértil','Casa existente'],creado:'2026-04-28',agente:null},
+  {id:9005,titulo:'Lote en condominio en Guarne',tipoInmueble:'Lote',tipoNegocio:'Venta',municipio:'Guarne',departamento:'Antioquia',zona:'La Mosca',precioVenta:140000000,areaLote:900,estrato:'4',descripcion:'Lote dentro de parcelación con portería, vías internas y zonas verdes comunes.',lat:6.2797,lng:-75.4419,imagenes:[],caracteristicas:['Portería 24h','Zonas comunes','Vías pavimentadas'],creado:'2026-04-15',agente:null},
+  {id:9006,titulo:'Gran lote comercial sobre vía principal',tipoInmueble:'Lote comercial',tipoNegocio:'Arriendo',municipio:'Rionegro',departamento:'Antioquia',zona:'San Antonio',precioArriendo:6500000,areaLote:1500,estrato:'4',descripcion:'Lote sobre vía de alto tráfico, ideal para bodega, parqueadero o local comercial.',lat:6.1556,lng:-75.3737,imagenes:[],caracteristicas:['Alto tráfico','Frente amplio','Uso comercial'],creado:'2026-03-30',agente:null}
+];
+
+/* arranque */
+cargar(false);
+</script>
+</body>
+</html>
